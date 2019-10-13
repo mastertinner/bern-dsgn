@@ -88,8 +88,11 @@ $ docker volume rm <span style="color:#66d9ef">$(</span>docker volume ls -q<span
 <span style="color:#75715e"># Remove all unused networks</span>
 $ docker network rm <span style="color:#66d9ef">$(</span>docker network ls -q<span style="color:#66d9ef">)</span>
 
+<span style="color:#75715e"># Update all local images</span>
+$ docker images | grep -v REPOSITORY | grep -v <span style="color:#e6db74">&#39;&lt;none&gt;&#39;</span> | awk <span style="color:#e6db74">&#39;{print $1&#34;:&#34;$2}&#39;</span> | xargs -L1 docker pull
+
 <span style="color:#75715e"># Remove everything</span>
-$ docker system prune --all
+$ docker system prune --all --volumes
 </code></pre></div>
 
 		<div
@@ -173,7 +176,7 @@ $ docker system prune --all
             </figure>
 			
 			<span>
-			&copy; <time datetime="2021-03-03 11:20:04.614487864 &#43;0100 CET m=&#43;0.131768460">2021</time> bespinian. Made with <a href='https://gohugo.io'>Hugo</a> using the <a href='https://github.com/EmielH/tale-hugo/'>Tale</a> theme.
+			&copy; <time datetime="2021-03-05 10:48:30.448017823 &#43;0100 CET m=&#43;0.348300697">2021</time> bespinian. Made with <a href='https://gohugo.io'>Hugo</a> using the <a href='https://github.com/EmielH/tale-hugo/'>Tale</a> theme.
 			</span>
 		</footer>
 

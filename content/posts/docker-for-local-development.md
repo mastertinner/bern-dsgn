@@ -78,6 +78,9 @@ $ docker volume rm $(docker volume ls -q)
 # Remove all unused networks
 $ docker network rm $(docker network ls -q)
 
+# Update all local images
+$ docker images | grep -v REPOSITORY | grep -v '<none>' | awk '{print $1":"$2}' | xargs -L1 docker pull
+
 # Remove everything
-$ docker system prune --all
+$ docker system prune --all --volumes
 ```

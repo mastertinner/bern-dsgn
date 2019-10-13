@@ -27,6 +27,15 @@ Prerequisites We assume you have access to a Kubernetes cluster with the followi
     </item>
     
     <item>
+      <title>Level Up Your Serverless Game</title>
+      <link>https://blog.bespinian.io/posts/level-up-your-serverless-game/</link>
+      <pubDate>Thu, 25 Jul 2019 20:24:44 +0200</pubDate>
+      
+      <guid>https://blog.bespinian.io/posts/level-up-your-serverless-game/</guid>
+      <description>Serverless has become a buzzword of its own. It has grown tremendously in popularity since AWS released their FaaS product called Lambda which allows you to easily run code in many different programming languages on demand. However, it is crucial to say that the term serverless not only includes FaaS products. AWS and many other providers have had serverless services like S3 or DynamoDB in their repertoire for a long time.</description>
+    </item>
+    
+    <item>
       <title>Run a Crypto Trading Bot on Cloud Foundry</title>
       <link>https://blog.bespinian.io/posts/run-a-crypto-trading-bot-on-cloud-foundry/</link>
       <pubDate>Mon, 11 Dec 2017 00:00:00 +0000</pubDate>

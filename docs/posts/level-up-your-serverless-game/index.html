@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en-us">
+    <head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<title>Level Up Your Serverless Game &middot; bespinian Blog</title>
+
+		
+  		<link rel="stylesheet" href="/css/style.css">
+		<link rel="stylesheet" href="/css/fonts.css">
+		<link rel="stylesheet" href="/custom.css">
+		
+		<link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+		<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+
+		
+		<link href="" rel="alternate" type="application/rss+xml" title="bespinian Blog" />
+	</head>
+
+    <body>
+        		<nav class="nav">
+			<div class="nav-container">
+				<a href="/">
+					<h2 class="nav-title">bespinian Blog</h2>
+				</a>
+				<ul>
+    
+    
+</ul>
+			</div>
+		</nav>
+
+        
+
+<main>
+	<div class="post">
+		<div class="post-info">
+    <span>Written by</span>
+        bespinian
+        <br>
+        <span>on&nbsp;</span><time datetime="2019-07-25 20:24:44 &#43;0200 CEST">July 25, 2019</time>
+</div>
+
+		<h1 class="post-title">Level Up Your Serverless Game</h1>
+<div class="post-line"></div>
+
+		
+
+		<p>Serverless has become a buzzword of its own. It has grown tremendously in popularity since AWS released their <a href="https://en.wikipedia.org/wiki/Function_as_a_service">FaaS</a> product called <a href="https://aws.amazon.com/lambda">Lambda</a> which allows you to easily run code in many different programming languages on demand. However, it is crucial to say that the term <em>serverless</em> not only includes FaaS products. AWS and many other providers have had serverless services like S3 or DynamoDB in their repertoire for a long time. Basically, serverless means three things:</p>
+<p>Firstly, you don&rsquo;t need to provision or manage any underlying infrastructure. The server(s), the operating system and most of the installed software are completely managed for you by the platform.</p>
+<p>Secondly, you pay as you go. Many cloud offerings promise dynamic pricing but using serverless services is truly dynamic. With FaaS platforms, you usually pay per unit of time your code runs. You never pay for idle resources and you get billed at an incredibly high granularity and flexibility. Furthermore, many services have really generous free tiers which allow you to try them before you really buy in.</p>
+<p>Thirdly, the underlying platform and resources will scale virtually indefinitely. In the case of AWS Lambda or any of its larger competitors, you will never run out of resources and you can have your application scale in and out automatically.</p>
+<p>This sounds great, doesn&rsquo;t it? However, like anything in software (and in general), it also comes with its downsides and caveats. The goal of this blog post is to encourage you to try a FaaS platform with a playground application and then gradually level up your game by making your code and configuration more mature and production ready. The described platform is AWS Lambda but the concepts are true for pretty much any FaaS provider and can be used ubiquitously.</p>
+<p>Preconditions: Install and configure the <a href="https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html">AWS CLI</a> and the <a href="https://golang.org">Go</a> programming language. We&rsquo;ll be doing most things manually via the AWS CLI to understand them better. Nevertheless, it is usually recommended to use a higher abstraction framework like <a href="https://github.com/apex/up">Apex Up</a> or <a href="https://serverless.com">Serverless</a>.</p>
+<h2 id="level-0---this-is-easy">Level 0 - This is Easy!</h2>
+<p>Let&rsquo;s get our first piece of code running, shall we? We&rsquo;ll deploy a simple Go function that runs on demand and greets the invoker. If you&rsquo;re not into Go, you can also adapt the code to the programming language of your choice. By now, pretty much anything should run on Lambda.</p>
+<p>Let&rsquo;s create our Lambda function. We&rsquo;ll start by creating a Go module:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ go mod init
+</code></pre></div><p>Next, we&rsquo;ll create a <code>main.go</code> file which contains the AWS Lambda libraries and our simple function:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#f92672">package</span> <span style="color:#a6e22e">main</span>
+
+<span style="color:#f92672">import</span> (
+	<span style="color:#e6db74">&#34;fmt&#34;</span>
+
+	<span style="color:#e6db74">&#34;github.com/aws/aws-lambda-go/lambda&#34;</span>
+)
+
+<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
+	<span style="color:#a6e22e">lambda</span>.<span style="color:#a6e22e">Start</span>(<span style="color:#a6e22e">handler</span>)
+}
+
+<span style="color:#66d9ef">type</span> <span style="color:#a6e22e">Event</span> <span style="color:#66d9ef">struct</span> {
+	<span style="color:#a6e22e">Name</span> <span style="color:#66d9ef">string</span> <span style="color:#e6db74">`json:&#34;name&#34;`</span>
+}
+
+<span style="color:#66d9ef">type</span> <span style="color:#a6e22e">Response</span> <span style="color:#66d9ef">struct</span> {
+	<span style="color:#a6e22e">Message</span> <span style="color:#66d9ef">string</span> <span style="color:#e6db74">`json:&#34;message&#34;`</span>
+}
+
+<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">handler</span>(<span style="color:#a6e22e">evt</span> <span style="color:#a6e22e">Event</span>) (<span style="color:#a6e22e">Response</span>, <span style="color:#66d9ef">error</span>) {
+	<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">Response</span>{<span style="color:#a6e22e">Message</span>: <span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Sprintf</span>(<span style="color:#e6db74">&#34;Greetings, %s&#34;</span>, <span style="color:#a6e22e">evt</span>.<span style="color:#a6e22e">Name</span>)}, <span style="color:#66d9ef">nil</span>
+}
+</code></pre></div><p>This simple function takes an input (the name of the invoker as a string) and greets them. Run the following command to build your app for the Lambda platform:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ GOOS<span style="color:#f92672">=</span>linux go build -o main
+</code></pre></div><p>Next, we&rsquo;ll have to package our executable into a ZIP archive to be able to upload it to Lambda:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ zip bin.zip main
+</code></pre></div><p>Great. Now we can create our function in AWS:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ aws iam create-role --role-name greeter-exec --assume-role-policy-document <span style="color:#e6db74">&#39;{ &#34;Version&#34;: &#34;2012-10-17&#34;, &#34;Statement&#34;: [ { &#34;Action&#34;: &#34;sts:AssumeRole&#34;, &#34;Effect&#34;: &#34;Allow&#34;, &#34;Principal&#34;: { &#34;Service&#34;: &#34;lambda.amazonaws.com&#34;  }  }  ]  }&#39;</span>
+$ aws iam attach-role-policy --role-name greeter-exec --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+$ aws lambda create-function --function-name greeter --runtime go1.x --zip-file fileb://bin.zip --handler main --role <span style="color:#e6db74">&#34;arn:aws:iam::</span><span style="color:#66d9ef">$(</span>aws sts get-caller-identity --query Account --output text<span style="color:#66d9ef">)</span><span style="color:#e6db74">:role/greeter-exec&#34;</span>
+</code></pre></div><p>The first command creates a new role in IAM and allows the Lambda service to assume it. By default, all requests are blocked in AWS so we have to enable that. The second command attaches an existing policy to that role we have created. This allows the role to write logs in CloudWatch, the logging aggregation service from AWS. The third command creates the actual Lambda function.</p>
+<p>We can now invoke our function to test it:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ aws lambda invoke --function-name greeter --payload <span style="color:#e6db74">&#39;{&#34;name&#34;:&#34;Garfield&#34;}&#39;</span> output.txt
+</code></pre></div><p>If we then look at the <code>output.txt</code> file, we&rsquo;ll see that Garfield has been greeted correctly.</p>
+<h2 id="level-1---no-cold-starts">Level 1 - No Cold Starts!</h2>
+
+
+		<div
+  class="bespinian-social-nav-container bespinian-social-nav-container--footer"
+>
+  <nav class="bespinian-social-nav">
+    
+    <a class="bespinian-social-nav-link" href="https://bespinian.io/">
+      <span class="bespinian-icon">
+        <svg role="img" aria-label="bespinian website">
+          <title>bespinian website</title>
+          <use href="/icons/globe.svg#glyph"></use>
+        </svg>
+      </span>
+    </a>
+    
+    <a class="bespinian-social-nav-link" href="https://github.com/bespinian">
+      <span class="bespinian-icon">
+        <svg role="img" aria-label="bespinian on GitHub">
+          <title>bespinian on GitHub</title>
+          <use href="/icons/github.svg#glyph"></use>
+        </svg>
+      </span>
+    </a>
+    
+    <a class="bespinian-social-nav-link" href="https://twitter.com/bespinian">
+      <span class="bespinian-icon">
+        <svg role="img" aria-label="bespinian on Twitter">
+          <title>bespinian on Twitter</title>
+          <use href="/icons/twitter.svg#glyph"></use>
+        </svg>
+      </span>
+    </a>
+    
+    <a class="bespinian-social-nav-link" href="/index.xml">
+      <span class="bespinian-icon">
+        <svg role="img" aria-label="The bespinian blog RSS feed">
+          <title>The bespinian blog RSS feed</title>
+          <use href="/icons/rss.svg#glyph"></use>
+        </svg>
+      </span>
+    </a>
+    
+  </nav>
+</div>
+
+	</div>
+
+	<div class="pagination">
+		<a href="/posts/run-a-crypto-trading-bot-on-cloud-foundry/" class="left arrow">&#8592;</a>
+		<a href="/posts/efficient-navigation-in-vim/" class="right arrow">&#8594;</a>
+
+		<a href="#" class="top">Top</a>
+	</div>
+</main>
+
+
+        		<footer>
+			
+			<span>
+			&copy; <time datetime="2021-03-05 10:48:30.44861492 &#43;0100 CET m=&#43;0.348897807">2021</time> bespinian. Made with <a href='https://gohugo.io'>Hugo</a> using the <a href='https://github.com/EmielH/tale-hugo/'>Tale</a> theme.
+			</span>
+		</footer>
+
+    </body>
+</html>
